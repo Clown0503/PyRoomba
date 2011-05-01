@@ -249,7 +249,6 @@ class SensorData(object):
     charge = property(__charge)
     
     def __capacity(self):
-        print self.__data[24:26]
         return TwoBytes(self.__data[24:26]).to_uint16()
     capacity = property(__capacity)
 
@@ -487,9 +486,9 @@ if __name__ == "__main__":
         time.sleep(15)
 
         print "cliff " + str(x.sensors.cliff.left)
-        print "cliff " + str(x.sensors.cliff.left)
-        print "cliff " + str(x.sensors.cliff.left)
-        print "cliff " + str(x.sensors.cliff.left)
+        print "cliff " + str(x.sensors.cliff.front_left)
+        print "cliff " + str(x.sensors.cliff.front_right)
+        print "cliff " + str(x.sensors.cliff.right)
         print "battery " + str(x.sensors.voltage)
         print "charging state " + str(x.sensors.charging_state)
         print "charge " + str(x.sensors.charge)
