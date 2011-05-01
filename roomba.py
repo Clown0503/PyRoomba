@@ -133,7 +133,7 @@ class AsciiRoombaTop(AsciiRoombaBasicPiece):
         else:
             cliff_status = sensors.cliff.front_right
         if cliff_status:
-            status.append("Cliff detected !")
+            status.append("Cliff !")
             ansi_color = ANSI_YELLOW
 
         if self.left_side:
@@ -164,7 +164,7 @@ class AsciiRoombaSubTop(AsciiRoombaBasicPiece):
         else:
             cliff_status = sensors.cliff.right
         if cliff_status:
-            status.append("Cliff detected !")
+            status.append("Cliff !")
             ansi_color = ANSI_YELLOW
 
         if self.left_side:
