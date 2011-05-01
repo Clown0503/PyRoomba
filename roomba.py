@@ -145,6 +145,8 @@ class AsciiRoombaTop(AsciiRoombaBasicPiece):
 
         if ansi:
             AsciiRoombaBasicPiece.set_color(self, ansi_color, self.left_side)
+        if sensors.charging_state != 4: # -> charging
+            status = []
         AsciiRoombaBasicPiece.add_text(self, self.left_side, status)
 
 class AsciiRoombaSubTop(AsciiRoombaBasicPiece):
@@ -175,6 +177,8 @@ class AsciiRoombaSubTop(AsciiRoombaBasicPiece):
 
         if ansi:
             AsciiRoombaBasicPiece.set_color(self, ansi_color, self.left_side)
+        if sensors.charging_state != 4: # -> charging
+            status = []
         AsciiRoombaBasicPiece.add_text(self, self.left_side, status)
 
 
