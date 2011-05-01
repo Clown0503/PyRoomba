@@ -46,6 +46,16 @@ if __name__ == "__main__":
             sys.stdout.write("OK\n")
             sys.stdout.flush()
 
+        sensors = None
+        if "battery" in orders or \
+           "sensors" in orders:
+            if verbose:
+                sys.stdout.write("Loading sensors informations ... ");
+                sys.stdout.flush()
+            sensors = roomba.sensors
+            if verbose:
+                sys.stdout.write("OK\n")
+
         if verbose:
             print "Sending orders:";
         for order in orders:
@@ -58,8 +68,17 @@ if __name__ == "__main__":
             elif order == "off":
                 roomba.off()
             elif order == "battery":
-                sensors = roomba.sensors
+                assert(sensors != None)
                 print "Charge: %dmA / %dmA" % (sensors.charge, sensors.capacity)
+            elif order == "sensors":
+                assert(sensors != None)
+                print "Cliffs: %r | %r | %r | %r" % (
+                    roomba.sensors.cliff.left,
+                    roomba.sensors.cliff.front_left,
+                    roomba.sensors.cliff.front_right,
+                    roomba.sensors.cliff.right
+                )
+
             else:
                 usage()
                 sys.exit(2)
