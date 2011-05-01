@@ -282,12 +282,31 @@ class RoombaAPI(object):
             self.port.open()
         self.port.write("$$$")
         self.port.flush()
-        time.sleep(1)
+        time.sleep(0.2)
         # XXX(Jflesch): Don't set rootooth baudrate here. Roomba don't have all the same
         # default baudrate. For instance, the original author had a baudrate of
         # 56.2K. Mine is 115.2K (Roomba 560). Rootooth can memorize this
         # information, so we will just assume the user already set it right
         self.wakeup()
+
+    def __rootoothVersion(self):
+        self.port.write("$$$")
+        self.port.flush()
+        time.sleep(.2)
+
+        self.port.write("V\n")
+        self.port.flush()
+        time.sleep(.2)
+
+        s = self.port.read(10)
+
+        self.port.write("---\n")
+        self.port.flush()
+        time.sleep(.2)
+
+        return s
+
+    rootoothVersion = property(__rootoothVersion)
 
     def __isconnected(self):
         return self.port.isopen()
@@ -420,7 +439,7 @@ class RoombaAPI(object):
             songNum
         ])
         
-    def fdock(self):
+    def dock(self):
         self.sendcmd(143)
         
     def __sensors(self):
@@ -469,8 +488,6 @@ if __name__ == "__main__":
  
         print "Connect"
         x.connect()
-        print "Start"
-        x.start()
         print "Control"
         x.control()
 
