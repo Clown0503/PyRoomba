@@ -2,14 +2,16 @@
 
 from RoombaSCI import RoombaAPI
 import os
-import sys
 import re
+import sys
+import time
 
 ANSI_RED='\033[31m'
 ANSI_YELLOW='\033[33m'
 ANSI_GREEN='\033[32m'
 ANSI_BLINK='\033[1m'
 ANSI_RST='\033[0m'
+ANSI_CLEAR='\033[2J'
 
 ROOMBA = "\
                 OOOOOOO                \n\
@@ -60,6 +62,7 @@ class AsciiRoombaWall:
         self.piece = []
 
     def construct(self, sensors, ansi = False):
+        self.piece = []
         if sensors.wall:
             self.piece.append("%20s=============     WALL     =============" % (""))
         if sensors.virtual_wall:
@@ -201,11 +204,10 @@ class AsciiRoombaBattery:
         self.piece = []
 
     def construct(self, sensors, ansi = False):
-        self.piece.append("")
+        self.piece = [ "" ]
 
-        ansi_color = ""
+        ansi_color = ANSI_GREEN
         ansi_rst = ""
-
         if (sensors.charge < sensors.capacity / 2):
             ansi_color = ANSI_YELLOW
         if (sensors.charge < sensors.capacity / 4):
@@ -215,9 +217,29 @@ class AsciiRoombaBattery:
         if not ansi:
             ansi_color = ""
             ansi_rst = ""
-
         self.piece.append("Battery: %s%dmA%s / %dmA" % (ansi_color,
             sensors.charge, ansi_rst, sensors.capacity))
+
+        ansi_color = ANSI_YELLOW
+        txt = [
+            "Charged",
+            "Reconditioning charging",
+            "Full charging",
+            "Trickle Charging",
+            "On battery",
+            "Charging fault condition"
+        ]
+        ansi_rst = ""
+        if sensors.charging_state == 0:
+            ansi_color = ANSI_GREEN
+        elif sensors.charging_state == 5:
+            ansi_color = ANSI_RED
+        if ansi_color != "":
+            ansi_rst = ANSI_RST
+        if not ansi:
+            ansi_color = ""
+            ansi_rst = ""
+        self.piece[1] += (" (%s%s%s)" % (ansi_color, txt[sensors.charging_state], ansi_rst))
 
 class AsciiRoomba:
     def __init__(self):
@@ -257,6 +279,7 @@ def usage():
     print "\tdock : Ok, forget it, you're making more crap than you're cleaning"
     print "\toff : OMG, stop breaking things ! right now !"
     print "\tstatus : Show me"
+    print "\tmonitor : I think I will keep an eye on you"
 
 if __name__ == "__main__":
     verbose = False
@@ -314,7 +337,8 @@ if __name__ == "__main__":
                 roomba.off()
             elif order == "sensors":
                 assert(sensors != None)
-                print "Battery Charge: %dmA / %dmA" % (sensors.charge, sensors.capacity)
+                print "Battery Charge: %dmA / %dmA (%s)" % (sensors.charge,
+                        sensors.capacity, str(sensors.charging_state))
                 print "Cliffs:                %-7r | %-7r | %-7r | %-7r" % (
                     sensors.cliff.left,
                     sensors.cliff.front_left,
@@ -339,6 +363,16 @@ if __name__ == "__main__":
                 assert(sensors != None)
                 ascii_roomba = AsciiRoomba()
                 ascii_roomba.display(sensors)
+            elif order == "monitor":
+                ascii_roomba = AsciiRoomba()
+                while True:
+                    sensors = roomba.sensors
+                    print ANSI_CLEAR
+                    ascii_roomba.display(sensors)
+                    if not sys.stdout.isatty():
+                        time.sleep(1)
+                    else:
+                        time.sleep(0.01)
             else:
                 usage()
                 sys.exit(2)
