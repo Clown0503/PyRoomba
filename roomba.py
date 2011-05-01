@@ -72,12 +72,24 @@ if __name__ == "__main__":
                 print "Charge: %dmA / %dmA" % (sensors.charge, sensors.capacity)
             elif order == "sensors":
                 assert(sensors != None)
-                print "Cliffs: %r | %r | %r | %r" % (
+                print "Cliffs:                %-7r | %-7r | %-7r | %-7r" % (
                     roomba.sensors.cliff.left,
                     roomba.sensors.cliff.front_left,
                     roomba.sensors.cliff.front_right,
                     roomba.sensors.cliff.right
                 )
+                print "Wheels drops:                    %-7r | %-7r" % (
+                    roomba.sensors.wheel_drops.left,
+                    roomba.sensors.wheel_drops.right
+                )
+                print "Bumps:                           %-7r | %-7r" % (
+                    roomba.sensors.bumps.left,
+                    roomba.sensors.bumps.right
+                )
+                print "Wall:                                %-7r" % (roomba.sensors.wall)
+                print "Virtual wall:                        %-7r" % (roomba.sensors.virtual_wall)
+                print "Battery temperature:              %d Celsius" % (roomba.sensors.temperature)
+
 
             else:
                 usage()
