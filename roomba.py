@@ -21,6 +21,10 @@ if __name__ == "__main__":
     sys.stdout.write("OK\n")
 
     try:
+        sys.stdout.write("Rootooth version: ")
+        sys.stdout.flush()
+        sys.stdout.write(roomba.rootoothVersion + "\n")
+
         sys.stdout.write("Connecting to the Roomba ... ")
         sys.stdout.flush()
         roomba.connect()

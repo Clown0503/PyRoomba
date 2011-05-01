@@ -276,13 +276,10 @@ class RoombaAPI(object):
         self.port.port = port
         self.port.baudrate = baudrate
         self.port.timeout = 10
-
-    def connect(self):
         if (self.port.isOpen() == False):
             self.port.open()
-        self.port.write("$$$")
-        self.port.flush()
-        time.sleep(0.2)
+
+    def connect(self):
         # XXX(Jflesch): Don't set rootooth baudrate here. Roomba don't have all the same
         # default baudrate. For instance, the original author had a baudrate of
         # 56.2K. Mine is 115.2K (Roomba 560). Rootooth can memorize this
@@ -291,18 +288,15 @@ class RoombaAPI(object):
 
     def __rootoothVersion(self):
         self.port.write("$$$")
-        self.port.flush()
-        time.sleep(.2)
+        self.port.readline() # read 'CMD'
 
         self.port.write("V\n")
-        self.port.flush()
-        time.sleep(.2)
-
-        s = self.port.read(10)
+        s = self.port.readline()
+        s = s.strip()
+        self.port.readline() # skip the copyright info. we already know about it
 
         self.port.write("---\n")
-        self.port.flush()
-        time.sleep(.2)
+        self.port.readline() # read 'END'
 
         return s
 
@@ -315,20 +309,15 @@ class RoombaAPI(object):
 
     def wakeup(self):
         self.port.write("$$$")
-        self.port.flush()
-        time.sleep(.2)
+        self.port.readline() # read 'CMD'
         self.port.write("S@,8080\n")
-        self.port.flush()
-        time.sleep(.2)
+        self.port.readline() # read 'AOK'
         self.port.write("S&,8000\n")
-        self.port.flush()
-        time.sleep(.2)
+        self.port.readline() # read 'AOK'
         self.port.write("S&,8080\n")
-        self.port.flush()
-        time.sleep(.2)
+        self.port.readline() # read 'AOK'
         self.port.write("---\n")
-        self.port.flush()
-        time.sleep(.2)
+        self.port.readline() # read 'END'
         self.start()
 
     def close(self):
