@@ -269,7 +269,7 @@ class int16(object):
 class RoombaAPI(object):
 
     def __init__(self,port,baudrate):
-        self.__speed = 255
+        self.__speed = 250
         self.port = serial.Serial()
         #should be connected upon initialization. run again to verify connection settings
         self.port.port = port
@@ -368,7 +368,7 @@ class RoombaAPI(object):
     def __set_speed(self, speedInt):
         if speedInt < 0:
             self.__speed = 0
-        elif speed > 500:
+        elif speedInt > 500:
             self.__speed = 500
         else:
             self.__speed = speedInt
@@ -479,12 +479,6 @@ if __name__ == "__main__":
         print "Control"
         x.control()
 
-        print "Dock"
-        x.fdock()
-
-        print "sleep"
-        time.sleep(15)
-
         print "cliff " + str(x.sensors.cliff.left)
         print "cliff " + str(x.sensors.cliff.front_left)
         print "cliff " + str(x.sensors.cliff.front_right)
@@ -493,6 +487,11 @@ if __name__ == "__main__":
         print "charging state " + str(x.sensors.charging_state)
         print "charge " + str(x.sensors.charge)
         print "capacity " + str(x.sensors.capacity)
+
+        x.spin_left()
+        time.sleep(5)
+
+        x.stop()
 
     finally:
         print "Off"

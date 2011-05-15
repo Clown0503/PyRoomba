@@ -3,7 +3,9 @@
 from RoombaSCI import RoombaAPI
 import os
 import re
+import select
 import sys
+import termios
 import time
 
 ANSI_RED='\033[31m'
@@ -274,6 +276,62 @@ class AsciiRoomba:
         sys.stdout.write("\n")
         sys.stdout.flush()
 
+def getchar():
+	fd = sys.stdin.fileno()
+	
+	if os.isatty(fd):
+		
+		old = termios.tcgetattr(fd)
+		new = termios.tcgetattr(fd)
+		new[3] = new[3] & ~termios.ICANON & ~termios.ECHO
+		new[6] [termios.VMIN] = 1
+		new[6] [termios.VTIME] = 0
+		
+		try:
+			termios.tcsetattr(fd, termios.TCSANOW, new)
+			termios.tcsendbreak(fd,0)
+			ch = os.read(fd,7)
+
+		finally:
+			termios.tcsetattr(fd, termios.TCSAFLUSH, old)
+	else:
+		ch = os.read(fd,7)
+	
+	return(ch)
+
+def control(roomba):
+    print "Controls:"
+    print "     ^8^"
+    print "<4<   5    >6>"
+    print "     v2v"
+    print ""
+
+    aRoomba = AsciiRoomba()
+
+    roomba.full()
+    while True:
+        c = getchar()
+        if c == "8":
+            roomba.forward()
+        elif c == "4":
+            roomba.left()
+        elif c == "6":
+            roomba.right()
+        elif c == "2":
+            roomba.backward()
+        elif c == "5":
+            roomba.stop()
+        elif c == "+":
+            roomba.speed = roomba.speed + 50
+        elif c == "-":
+            roomba.speed = roomba.speed - 50
+
+        sensors = roomba.sensors
+        print ANSI_CLEAR
+        aRoomba.display(sensors)
+        print "Speed: %d/500" % roomba.speed
+
+
 def usage():
     print "Syntax: %s [<options>] <order 1> [<order 2> [<order3> [...]]]" % sys.argv[0]
     print "Possible options are:"
@@ -284,6 +342,7 @@ def usage():
     print "\toff : OMG, stop breaking things ! right now !"
     print "\tstatus : Show me"
     print "\tmonitor : I think I will keep an eye on you"
+    print "\tcontrol : Goddamnnit, let me do it ..."
 
 if __name__ == "__main__":
     verbose = False
@@ -377,6 +436,8 @@ if __name__ == "__main__":
                         time.sleep(1)
                     else:
                         time.sleep(0.01)
+            elif order == "control":
+                control(roomba)
             else:
                 usage()
                 sys.exit(2)
