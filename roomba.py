@@ -8,6 +8,9 @@ import sys
 import termios
 import time
 
+RFCOMM_DEV="/dev/rfcomm0"
+RFCOMM_BAUDRATE=115200
+
 ANSI_RED='\033[31m'
 ANSI_YELLOW='\033[33m'
 ANSI_GREEN='\033[32m'
@@ -359,7 +362,7 @@ if __name__ == "__main__":
     if verbose:
         sys.stdout.write("Connecting to the Rootooth ... ")
         sys.stdout.flush()
-    roomba = RoombaAPI("/dev/rfcomm0", 115200);
+    roomba = RoombaAPI(RFCCOMM_DEV, RFCOMM_BAUDRATE);
     if verbose:
         sys.stdout.write("OK\n")
 
