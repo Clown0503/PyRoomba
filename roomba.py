@@ -362,7 +362,7 @@ if __name__ == "__main__":
     if verbose:
         sys.stdout.write("Connecting to the Rootooth ... ")
         sys.stdout.flush()
-    roomba = RoombaAPI(RFCCOMM_DEV, RFCOMM_BAUDRATE);
+    roomba = RoombaAPI(RFCOMM_DEV, RFCOMM_BAUDRATE);
     if verbose:
         sys.stdout.write("OK\n")
 
