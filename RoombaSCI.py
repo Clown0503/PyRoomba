@@ -303,10 +303,11 @@ class RoombaAPI(object):
 
     def __isconnected(self):
         return self.port.isopen()
-    
+
     isconnected = property(__isconnected)
 
     def wakeup(self):
+        self.port.read()
         self.port.write("$$$")
         self.port.readline() # read 'CMD'
         self.port.write("S@,8080\n")
