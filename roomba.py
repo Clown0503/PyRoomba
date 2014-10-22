@@ -3,20 +3,19 @@
 from RoombaSCI import RoombaAPI
 import os
 import re
-import select
 import sys
 import termios
 import time
 
-RFCOMM_DEV=os.getenv("ROOMBA_RFCOMM", "/dev/rfcomm0")
-RFCOMM_BAUDRATE=115200
+RFCOMM_DEV = os.getenv("ROOMBA_RFCOMM", "/dev/rfcomm0")
+RFCOMM_BAUDRATE = 115200
 
-ANSI_RED='\033[31m'
-ANSI_YELLOW='\033[33m'
-ANSI_GREEN='\033[32m'
-ANSI_BLINK='\033[1m'
-ANSI_RST='\033[0m'
-ANSI_CLEAR='\033[2J'
+ANSI_RED = '\033[31m'
+ANSI_YELLOW = '\033[33m'
+ANSI_GREEN = '\033[32m'
+ANSI_BLINK = '\033[1m'
+ANSI_RST = '\033[0m'
+ANSI_CLEAR = '\033[2J'
 
 ROOMBA = "\
                 OOOOOOO                \n\
@@ -53,27 +52,32 @@ WHEEL_LINES = range(11, 16)
 WHEEL_ASCII = "I=I"
 BOTTOM_LINES = range(16, 24)
 
+
 class AsciiRoombaStaticLines:
     def __init__(self, lines_nb):
         self.piece = []
         for line_nb in lines_nb:
             self.piece.append("%20s%s" % ("", ROOMBA[line_nb]))
 
-    def construct(self, sensors = None, ansi = False):
+    def construct(self, sensors=None, ansi=False):
         pass
+
 
 class AsciiRoombaWall:
     def __init__(self):
         self.piece = []
 
-    def construct(self, sensors, ansi = False):
+    def construct(self, sensors, ansi=False):
         self.piece = []
         if sensors.wall:
-            self.piece.append("%20s=============     WALL     =============" % (""))
+            self.piece.append("%20s=============     WALL     ============="
+                              % (""))
         if sensors.virtual_wall:
-            self.piece.append("%20s------------- VIRTUAL WALL -------------" % (""))
+            self.piece.append("%20s------------- VIRTUAL WALL -------------"
+                              % (""))
         if len(self.piece) > 0:
             self.piece.append("")
+
 
 class AsciiRoombaBasicPiece:
     def __init__(self):
@@ -83,7 +87,6 @@ class AsciiRoombaBasicPiece:
         self.piece = []
         for line_nb in lines_nb:
             line = ROOMBA[line_nb]
-            sline = line.strip()
             middle = len(line)/2
             if left_side:
                 line = line[:middle]
@@ -110,24 +113,27 @@ class AsciiRoombaBasicPiece:
                     text = "     %s" % (text)
                 self.piece[i] = "%s%s" % (self.piece[i], text)
 
-    def set_color(self, color, left, to_highlight = None):
+    def set_color(self, color, left, to_highlight=None):
         for i in range(0, len(self.piece)):
-            if to_highlight == None:
+            if to_highlight is None:
                 if left:
-                    self.piece[i] = re.sub(r'^(\s*)(O+)', r'\1' + color + r'\2' + ANSI_RST, self.piece[i])
+                    self.piece[i] = re.sub(
+                        r'^(\s*)(O+)', r'\1' + color + r'\2' + ANSI_RST,
+                        self.piece[i])
                 else:
-                    self.piece[i] = re.sub(r'(O+)(\s*)$', color + r'\1' + ANSI_RST + r'\2',
-                                           self.piece[i])
+                    self.piece[i] = re.sub(
+                        r'(O+)(\s*)$', color + r'\1' + ANSI_RST + r'\2',
+                        self.piece[i])
             else:
-                self.piece[i] = self.piece[i].replace(to_highlight,
-                    "%s%s%s" % (color, to_highlight, ANSI_RST))
+                self.piece[i] = self.piece[i].replace(
+                    to_highlight, "%s%s%s" % (color, to_highlight, ANSI_RST))
 
 
 class AsciiRoombaTop(AsciiRoombaBasicPiece):
     def __init__(self, left_side):
         self.left_side = left_side
 
-    def construct(self, sensors, ansi = False):
+    def construct(self, sensors, ansi=False):
         AsciiRoombaBasicPiece.construct_clean(self, TOP_LINES, self.left_side)
 
         status = []
@@ -150,16 +156,18 @@ class AsciiRoombaTop(AsciiRoombaBasicPiece):
 
         if ansi:
             AsciiRoombaBasicPiece.set_color(self, ansi_color, self.left_side)
-        if sensors.charging_state != 4: # -> charging
+        if sensors.charging_state != 4:  # -> charging
             status = []
         AsciiRoombaBasicPiece.add_text(self, self.left_side, status)
+
 
 class AsciiRoombaSubTop(AsciiRoombaBasicPiece):
     def __init__(self, left_side):
         self.left_side = left_side
 
-    def construct(self, sensors, ansi = False):
-        AsciiRoombaBasicPiece.construct_clean(self, SUBTOP_LINES, self.left_side)
+    def construct(self, sensors, ansi=False):
+        AsciiRoombaBasicPiece.construct_clean(self, SUBTOP_LINES,
+                                              self.left_side)
 
         status = []
         ansi_color = ANSI_GREEN
@@ -182,7 +190,7 @@ class AsciiRoombaSubTop(AsciiRoombaBasicPiece):
 
         if ansi:
             AsciiRoombaBasicPiece.set_color(self, ansi_color, self.left_side)
-        if sensors.charging_state != 4: # -> charging
+        if sensors.charging_state != 4:  # -> charging
             status = []
         AsciiRoombaBasicPiece.add_text(self, self.left_side, status)
 
@@ -191,7 +199,7 @@ class AsciiRoombaWheel(AsciiRoombaBasicPiece):
     def __init__(self, left_side):
         self.left_side = left_side
 
-    def construct(self, sensors, ansi = False):
+    def construct(self, sensors, ansi=False):
         AsciiRoombaBasicPiece.construct_clean(self, WHEEL_LINES, self.left_side)
 
         status = []
@@ -205,15 +213,17 @@ class AsciiRoombaWheel(AsciiRoombaBasicPiece):
             ansi_color = ANSI_RED + ANSI_BLINK
 
         if ansi:
-            AsciiRoombaBasicPiece.set_color(self, ansi_color, self.left_side, WHEEL_ASCII)
+            AsciiRoombaBasicPiece.set_color(self, ansi_color, self.left_side,
+                                            WHEEL_ASCII)
         AsciiRoombaBasicPiece.add_text(self, self.left_side, status)
+
 
 class AsciiRoombaBattery:
     def __init__(self):
         self.piece = []
 
-    def construct(self, sensors, ansi = False):
-        self.piece = [ "" ]
+    def construct(self, sensors, ansi=False):
+        self.piece = [""]
 
         ansi_color = ANSI_GREEN
         ansi_rst = ""
@@ -226,8 +236,9 @@ class AsciiRoombaBattery:
         if not ansi:
             ansi_color = ""
             ansi_rst = ""
-        self.piece.append("Battery: %s%dmA%s / %dmA" % (ansi_color,
-            sensors.charge, ansi_rst, sensors.capacity))
+        self.piece.append("Battery: %s%dmA%s / %dmA"
+                          % (ansi_color, sensors.charge, ansi_rst,
+                             sensors.capacity))
 
         ansi_color = ANSI_YELLOW
         txt = [
@@ -248,18 +259,21 @@ class AsciiRoombaBattery:
         if not ansi:
             ansi_color = ""
             ansi_rst = ""
-        self.piece[1] += (" (%s%s%s)" % (ansi_color, txt[sensors.charging_state], ansi_rst))
+        self.piece[1] += (" (%s%s%s)"
+                          % (ansi_color, txt[sensors.charging_state],
+                             ansi_rst))
+
 
 class AsciiRoomba:
     def __init__(self):
         self.pieces = [
-            [ AsciiRoombaWall() ],
-            [ AsciiRoombaTop(True), AsciiRoombaTop(False) ],
-            [ AsciiRoombaSubTop(True), AsciiRoombaSubTop(False) ],
-            [ AsciiRoombaStaticLines(MIDDLE_LINES) ],
-            [ AsciiRoombaWheel(True), AsciiRoombaWheel(False) ],
-            [ AsciiRoombaStaticLines(BOTTOM_LINES) ],
-            [ AsciiRoombaBattery() ],
+            [AsciiRoombaWall()],
+            [AsciiRoombaTop(True), AsciiRoombaTop(False)],
+            [AsciiRoombaSubTop(True), AsciiRoombaSubTop(False)],
+            [AsciiRoombaStaticLines(MIDDLE_LINES)],
+            [AsciiRoombaWheel(True), AsciiRoombaWheel(False)],
+            [AsciiRoombaStaticLines(BOTTOM_LINES)],
+            [AsciiRoombaBattery()],
         ]
 
     def display(self, sensors):
@@ -279,28 +293,30 @@ class AsciiRoomba:
         sys.stdout.write("\n")
         sys.stdout.flush()
 
-def getchar():
-	fd = sys.stdin.fileno()
-	
-	if os.isatty(fd):
-		
-		old = termios.tcgetattr(fd)
-		new = termios.tcgetattr(fd)
-		new[3] = new[3] & ~termios.ICANON & ~termios.ECHO
-		new[6] [termios.VMIN] = 1
-		new[6] [termios.VTIME] = 0
-		
-		try:
-			termios.tcsetattr(fd, termios.TCSANOW, new)
-			termios.tcsendbreak(fd,0)
-			ch = os.read(fd,7)
 
-		finally:
-			termios.tcsetattr(fd, termios.TCSAFLUSH, old)
-	else:
-		ch = os.read(fd,7)
-	
-	return(ch)
+def getchar():
+    fd = sys.stdin.fileno()
+
+    if os.isatty(fd):
+
+        old = termios.tcgetattr(fd)
+        new = termios.tcgetattr(fd)
+        new[3] = new[3] & ~termios.ICANON & ~termios.ECHO
+        new[6][termios.VMIN] = 1
+        new[6][termios.VTIME] = 0
+
+        try:
+            termios.tcsetattr(fd, termios.TCSANOW, new)
+            termios.tcsendbreak(fd, 0)
+            ch = os.read(fd, 7)
+
+        finally:
+            termios.tcsetattr(fd, termios.TCSAFLUSH, old)
+    else:
+        ch = os.read(fd, 7)
+
+    return(ch)
+
 
 def control(roomba):
     print "Controls:"
@@ -336,16 +352,19 @@ def control(roomba):
 
 
 def usage():
-    print "Syntax: %s [<options>] <order 1> [<order 2> [<order3> [...]]]" % sys.argv[0]
-    print "Possible options are:"
-    print "\t-v : verbose"
-    print "Possible orders are:"
-    print "\tclean : Start cleaning the room you lazy robot !"
-    print "\tdock : Ok, forget it, you're making more crap than you're cleaning"
-    print "\toff : OMG, stop breaking things ! right now !"
-    print "\tstatus : Show me"
-    print "\tmonitor : I think I will keep an eye on you"
-    print "\tcontrol : Goddamnnit, let me do it ..."
+    print("Syntax: %s [<options>] <order 1> [<order 2> [<order3> [...]]]"
+          % sys.argv[0])
+    print("Possible options are:")
+    print("\t-v : verbose")
+    print("Possible orders are:")
+    print("\tclean : Start cleaning the room you lazy robot !")
+    print("\tdock : Ok, forget it, you're making more crap than you're"
+          + " cleaning")
+    print("\toff : OMG, stop breaking things ! right now !")
+    print("\tstatus : Show me")
+    print("\tmonitor : I think I will keep an eye on you")
+    print("\tcontrol : Goddamnnit, let me do it ...")
+
 
 if __name__ == "__main__":
     verbose = False
@@ -353,7 +372,7 @@ if __name__ == "__main__":
     if len(sys.argv) <= 1 or "-h" in sys.argv or "--help" in sys.argv:
         usage()
         sys.exit(2)
-    
+
     orders = sys.argv[1:]
     if "-v" in orders:
         orders.remove("-v")
@@ -362,7 +381,7 @@ if __name__ == "__main__":
     if verbose:
         sys.stdout.write("Connecting to the Rootooth ... ")
         sys.stdout.flush()
-    roomba = RoombaAPI(RFCOMM_DEV, RFCOMM_BAUDRATE);
+    roomba = RoombaAPI(RFCOMM_DEV, RFCOMM_BAUDRATE)
     if verbose:
         sys.stdout.write("OK\n")
 
@@ -384,14 +403,14 @@ if __name__ == "__main__":
         if "sensors" in orders or \
            "status" in orders:
             if verbose:
-                sys.stdout.write("Loading sensors informations ... ");
+                sys.stdout.write("Loading sensors informations ... ")
                 sys.stdout.flush()
             sensors = roomba.sensors
             if verbose:
                 sys.stdout.write("OK\n")
 
         if verbose:
-            print "Sending orders:";
+            print("Sending orders:")
         for order in orders:
             if verbose:
                 print "- %s" % order
@@ -402,31 +421,39 @@ if __name__ == "__main__":
             elif order == "off":
                 roomba.off()
             elif order == "sensors":
-                assert(sensors != None)
-                print "Battery Charge: %dmA / %dmA (%s)" % (sensors.charge,
-                        sensors.capacity, str(sensors.charging_state))
-                print "Cliffs:                %-7r | %-7r | %-7r | %-7r" % (
+                assert(sensors is not None)
+                print("Battery Charge: %dmA / %dmA (%s)"
+                      % (
+                          sensors.charge, sensors.capacity,
+                          str(sensors.charging_state)
+                      ))
+                print("Cliffs:                %-7r | %-7r | %-7r | %-7r" % (
                     sensors.cliff.left,
                     sensors.cliff.front_left,
                     sensors.cliff.front_right,
                     sensors.cliff.right
-                )
-                print "Wheels drops:                    %-7r | %-7r" % (
+                ))
+                print("Wheels drops:                    %-7r | %-7r" % (
                     sensors.wheel_drops.left,
                     sensors.wheel_drops.right
-                )
-                print "Bumps:                           %-7r | %-7r" % (
+                ))
+                print("Bumps:                           %-7r | %-7r" % (
                     sensors.bumps.left,
                     sensors.bumps.right
-                )
-                print "Wall:                                %-7r" % (sensors.wall)
-                print "Virtual wall:                        %-7r" % (sensors.virtual_wall)
-                print "Battery temperature:              %d Celsius" % (sensors.temperature)
-                print "Dirt detector:                   %-7d | %-7d" % (
-                    sensors.dirt_detector.left,
-                    sensors.dirt_detector.right)
+                ))
+                print("Wall:                                %-7r"
+                      % (sensors.wall))
+                print("Virtual wall:                        %-7r"
+                      % (sensors.virtual_wall))
+                print("Battery temperature:              %d Celsius"
+                      % (sensors.temperature))
+                print("Dirt detector:                   %-7d | %-7d"
+                      % (
+                          sensors.dirt_detector.left,
+                          sensors.dirt_detector.right
+                      ))
             elif order == "status":
-                assert(sensors != None)
+                assert(sensors is not None)
                 ascii_roomba = AsciiRoomba()
                 ascii_roomba.display(sensors)
             elif order == "monitor":
@@ -451,4 +478,3 @@ if __name__ == "__main__":
         roomba.close()
 
     sys.exit(0)
-
